@@ -70,4 +70,17 @@ public class UserDao {
             return null;
         }
     }
+
+    public UserEntity deleteUser(final String userId){
+        try {
+            UserEntity deleteUser = this.entityManager.createNamedQuery( "userById", UserEntity.class ).
+                    setParameter( "uuid", userId )
+                    .getSingleResult();
+            this.entityManager.remove( deleteUser );
+            return deleteUser;
+        } catch (NoResultException nre){
+            return null;
+        }
+
+    }
 }
