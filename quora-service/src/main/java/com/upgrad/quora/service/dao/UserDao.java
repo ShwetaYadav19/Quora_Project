@@ -61,4 +61,13 @@ public class UserDao {
         this.entityManager.merge( userAuthTokenEntity );
         return userAuthTokenEntity;
     }
+
+    public UserEntity getUser(final String userid){
+        try {
+            return this.entityManager.createNamedQuery( "userById", UserEntity.class ).setParameter( "uuid", userid )
+                    .getSingleResult();
+        } catch (NoResultException nre){
+            return null;
+        }
+    }
 }

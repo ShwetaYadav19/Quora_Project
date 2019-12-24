@@ -1,5 +1,7 @@
 package com.upgrad.quora.api.controller;
 
+import com.upgrad.quora.api.model.SigninResponse;
+import com.upgrad.quora.api.model.SignoutResponse;
 import com.upgrad.quora.api.model.SignupUserRequest;
 import com.upgrad.quora.api.model.SignupUserResponse;
 import com.upgrad.quora.service.business.AuthenticateService;
@@ -61,7 +63,7 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/user/signin",consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignupUserResponse> signinUser(@RequestHeader("authorization") final String authorization)
+    public ResponseEntity<SigninResponse> signinUser(@RequestHeader("authorization") final String authorization)
             throws AuthenticationFailedException {
         byte[] decode = Base64.getDecoder().decode(authorization.split( "Basic " )[1]);
         String decodedText = new String(decode);
@@ -70,13 +72,13 @@ public class UserController {
         UserAuthTokenEntity userAuthTokenEntity = this.authenticateService.
                 authenticateUser( decodedArray[0],decodedArray[1] );
 
-        SignupUserResponse signupUserResponse = new SignupUserResponse().id( userAuthTokenEntity.getUser().getUuid() )
-                .status( "SIGNED IN SUCCESSFULLY" );
+        SigninResponse signupUserResponse = new SigninResponse().id( userAuthTokenEntity.getUser().getUuid() )
+                .message( "SIGNED IN SUCCESSFULLY" );
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("access-token", userAuthTokenEntity.getAccessToken());
 
-        ResponseEntity<SignupUserResponse> responseEntity = new ResponseEntity<SignupUserResponse>( signupUserResponse, headers,
+        ResponseEntity<SigninResponse> responseEntity = new ResponseEntity<SigninResponse>( signupUserResponse, headers,
                 HttpStatus.OK);
 
         return responseEntity;
@@ -85,7 +87,7 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/user/signout",consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignupUserResponse> signoutUser(@RequestHeader("accessToken") final String accessToken) throws SignOutRestrictedException {
+    public ResponseEntity<SignoutResponse> signoutUser(@RequestHeader("accessToken") final String accessToken) throws SignOutRestrictedException {
 
         UserAuthTokenEntity loggedInUser = this.authenticateService.logoutUser( accessToken );
 
@@ -93,10 +95,10 @@ public class UserController {
 
         UserAuthTokenEntity loggedOutUser = this.authenticateService.updateUserAuthTokeEntity( loggedInUser );
 
-        SignupUserResponse signupUserResponse = new SignupUserResponse().id( loggedInUser.getUuid() )
-                .status( "SIGNED OUT SUCCESSFULLY" );
+        SignoutResponse signupUserResponse = new SignoutResponse().id( loggedInUser.getUuid() )
+                .message( "SIGNED OUT SUCCESSFULLY" );
 
-        return new ResponseEntity<SignupUserResponse>(signupUserResponse, HttpStatus.OK);
+        return new ResponseEntity<SignoutResponse>(signupUserResponse, HttpStatus.OK);
 
     }
 
