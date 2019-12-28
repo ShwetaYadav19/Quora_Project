@@ -46,4 +46,8 @@ public class QuestionDao {
         this.entityManager.merge( question );
         return question;
     }
+
+    public void deleteQuestion(Question question) {
+        this.entityManager.remove( question );
+    }
 }

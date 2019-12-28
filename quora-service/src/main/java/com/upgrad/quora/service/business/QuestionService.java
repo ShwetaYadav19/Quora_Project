@@ -80,8 +80,27 @@ public class QuestionService {
 
     }
 
+
+    public Boolean isUserOwnerorAdmin(final String questionId,final UserEntity userEntity) throws AuthorizationFailedException, InvalidQuestionException {
+        Question question = getQuestion( questionId );
+        if (!userEntity.getRole().equals( "admin" ) || !userEntity.equals( question.getUser() ) ) {
+            throw new AuthorizationFailedException( "ATHR-003", "Only the question owner or admin can delete the question" );
+        }
+        return true;
+
+    }
+
+
+
     @Transactional(propagation = Propagation.REQUIRED)
     public Question updateQuestion(Question question) {
         return this.questionDao.updateQuestion( question );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Question deleteQuestion(String questionId) {
+        Question question = this.questionDao.getQuestion( questionId );
+        this.questionDao.deleteQuestion(question);
+        return question;
     }
 }

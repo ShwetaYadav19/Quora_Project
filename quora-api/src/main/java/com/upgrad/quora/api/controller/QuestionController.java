@@ -65,7 +65,7 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/edit/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionEditResponse> editQuestion(@PathVariable("questionId") String questionId,  final QuestionEditRequest questionEditRequest,
-                                                             @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException, InvalidQuestionException {
+                                                             @RequestHeader("authorization") final String authorization) throws  AuthorizationFailedException, InvalidQuestionException {
 
         UserEntity userEntity = this.authenticateService.getUser( authorization );
         Boolean isQuestionOwner = this.questionService.isQuestionOwner( questionId, userEntity );
@@ -80,7 +80,24 @@ public class QuestionController {
             questionEditResponse.id( createdQuestion.getUuid() ).status( "QUESTION EDITED" );
         }
 
-        return new ResponseEntity<QuestionEditResponse>( questionEditResponse,HttpStatus.CREATED );
+        return new ResponseEntity<QuestionEditResponse>( questionEditResponse,HttpStatus.OK );
+
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/question/delete/{questionId}")
+    public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@PathVariable("questionId") String questionId,
+                                                               @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException {
+
+        UserEntity userEntity = this.authenticateService.getUser( authorization );
+        QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse();
+        Boolean isUserAdminorOwner = this.questionService.isUserOwnerorAdmin( questionId, userEntity );
+
+        if(isUserAdminorOwner) {
+            Question deletedQuestion = questionService.deleteQuestion( questionId );
+            questionDeleteResponse.id( deletedQuestion.getUuid() ).status( "QUESTION DELETED" );
+        }
+
+        return new ResponseEntity<QuestionDeleteResponse>( questionDeleteResponse,HttpStatus.OK );
 
     }
 }
