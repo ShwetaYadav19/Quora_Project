@@ -1,21 +1,18 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.QuestionDetailsResponse;
-import com.upgrad.quora.api.model.QuestionRequest;
-import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.AuthenticateService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.Question;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -53,16 +50,37 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/question/all",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> createQuestion(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
+    public ResponseEntity<QuestionDetailsResponse> createQuestion(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
 
-        UserEntity userEntity = this.questionService.getUser( authorization );
+        UserEntity userEntity = this.authenticateService.getUser( authorization );
 
-        String allQuestionsContent = this.questionService.getAllQuestions(userEntity);
+        String allQuestionsContent = this.questionService.getAllQuestions();
 
         QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
                 .content( allQuestionsContent );
 
         return new ResponseEntity<QuestionDetailsResponse>( questionDetailsResponse,HttpStatus.OK );
+
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/question/edit/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionEditResponse> editQuestion(@PathVariable("questionId") String questionId,  final QuestionEditRequest questionEditRequest,
+                                                             @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException, InvalidQuestionException {
+
+        UserEntity userEntity = this.authenticateService.getUser( authorization );
+        Boolean isQuestionOwner = this.questionService.isQuestionOwner( questionId, userEntity );
+        QuestionEditResponse questionEditResponse = new QuestionEditResponse();
+
+        if(isQuestionOwner) {
+            Date date = new Date();
+            Question question = this.questionService.getQuestion( questionId );
+            question.setContent( questionEditRequest.getContent() );
+            question.setDate( new Timestamp( date.getTime() ) );
+            Question createdQuestion = questionService.updateQuestion( question );
+            questionEditResponse.id( createdQuestion.getUuid() ).status( "QUESTION EDITED" );
+        }
+
+        return new ResponseEntity<QuestionEditResponse>( questionEditResponse,HttpStatus.CREATED );
 
     }
 }
