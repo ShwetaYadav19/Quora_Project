@@ -30,7 +30,7 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/create",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionResponse> createQuestion(final QuestionRequest questionRequest,
-                                                           @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
+                                                           @RequestHeader("authorization") final String authorization) throws  AuthorizationFailedException {
 
         Date date = new Date(  );
 
@@ -50,11 +50,28 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/question/all",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> createQuestion(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
+    public ResponseEntity<QuestionDetailsResponse> getAllQuestions(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
 
         UserEntity userEntity = this.authenticateService.getUser( authorization );
 
         String allQuestionsContent = this.questionService.getAllQuestions();
+
+        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
+                .content( allQuestionsContent );
+
+        return new ResponseEntity<QuestionDetailsResponse>( questionDetailsResponse,HttpStatus.OK );
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "question/all/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDetailsResponse> getQuestionByUserId(@PathVariable("userId") String userId,
+                                                                  @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException {
+
+        UserEntity userEntity = this.authenticateService.getUser( authorization );
+
+        UserEntity searchUser = this.authenticateService.getUserById( userId );
+
+        String allQuestionsContent = this.questionService.getAllQuestionsByUser(searchUser);
 
         QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
                 .content( allQuestionsContent );

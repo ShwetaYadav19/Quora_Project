@@ -75,8 +75,6 @@ public class AuthenticateService {
         return this.userDao.updateUserAuthTokenEntity( userAuthTokenEntity );
     }
 
-
-    @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity getUser(final String accessToken) throws AuthorizationFailedException {
 
         UserAuthTokenEntity userAuthTokenEntity = this.userDao.getAuthToken( accessToken );
@@ -89,6 +87,18 @@ public class AuthenticateService {
         }
 
         return userAuthTokenEntity.getUser();
+
+    }
+
+    public UserEntity getUserById(final String userId) throws AuthorizationFailedException {
+
+        UserEntity userEntity = this.userDao.getUser( userId );
+
+        if (userEntity == null) {
+            throw new AuthorizationFailedException( "USR-001", "User with entered uuid whose question details are to be seen does not exist" );
+        }
+
+        return userEntity;
 
     }
 

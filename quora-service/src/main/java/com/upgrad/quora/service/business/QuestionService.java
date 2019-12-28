@@ -4,7 +4,6 @@ import com.upgrad.quora.service.dao.QuestionDao;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.Question;
 import com.upgrad.quora.service.entity.UserEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +20,13 @@ public class QuestionService {
     private UserDao userDao;
 
     @Autowired
+    private AuthenticateService authenticateService;
+    @Autowired
     private QuestionDao questionDao;
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public Question createQuestion(final Question question, final String accessToken) throws AuthenticationFailedException {
-        UserEntity userEntity = userDao.getUser( accessToken );
+    public Question createQuestion(final Question question, final String accessToken) throws  AuthorizationFailedException {
+        UserEntity userEntity = authenticateService.getUser( accessToken );
 
         question.setUser( userEntity );
 
@@ -50,7 +51,7 @@ public class QuestionService {
         StringBuilder content = new StringBuilder(  );
 
         for(Question q: allQuestions){
-            content.append( q.toString() +" " );
+            content.append( q.getUuid()+ " -> " +q.toString() + "\r\n" );
         }
 
         return content.toString();
@@ -89,8 +90,6 @@ public class QuestionService {
         return true;
 
     }
-
-
 
     @Transactional(propagation = Propagation.REQUIRED)
     public Question updateQuestion(Question question) {
