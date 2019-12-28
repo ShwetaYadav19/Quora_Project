@@ -2,8 +2,6 @@ package com.upgrad.quora.service.entity;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -16,7 +14,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "QUESTION")
 @NamedQueries({
-
+        @NamedQuery(name = "questionByUser", query = "select q from Question q where q.user =:user")
 })
 
 public class Question implements Serializable {
@@ -96,6 +94,6 @@ public class Question implements Serializable {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        return this.content;
     }
 }

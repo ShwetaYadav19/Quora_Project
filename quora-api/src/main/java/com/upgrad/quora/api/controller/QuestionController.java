@@ -1,9 +1,12 @@
 package com.upgrad.quora.api.controller;
 
+import com.upgrad.quora.api.model.QuestionDetailsResponse;
 import com.upgrad.quora.api.model.QuestionRequest;
 import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.service.business.AuthenticateService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.Question;
+import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,9 @@ public class QuestionController {
     @Autowired
     private QuestionService questionService;
 
+    @Autowired
+    private AuthenticateService authenticateService;
+
     @RequestMapping(method = RequestMethod.POST, path = "/question/create",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionResponse> createQuestion(final QuestionRequest questionRequest,
                                                            @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
@@ -43,6 +49,20 @@ public class QuestionController {
                                                                    .status( "QUESTION CREATED" );
 
         return new ResponseEntity<QuestionResponse>( questionResponse,HttpStatus.CREATED );
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/question/all",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDetailsResponse> createQuestion(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
+
+        UserEntity userEntity = this.questionService.getUser( authorization );
+
+        String allQuestionsContent = this.questionService.getAllQuestions(userEntity);
+
+        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
+                .content( allQuestionsContent );
+
+        return new ResponseEntity<QuestionDetailsResponse>( questionDetailsResponse,HttpStatus.OK );
 
     }
 }
