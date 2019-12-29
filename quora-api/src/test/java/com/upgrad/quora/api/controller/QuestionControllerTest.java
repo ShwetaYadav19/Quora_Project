@@ -28,7 +28,7 @@ public class QuestionControllerTest {
     @Test
     public void createQuestionWithNonExistingAccessToken() throws Exception {
         mvc.perform(MockMvcRequestBuilders.post("/question/create?content=my_question").contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).header("authorization", "non_existing_access_token"))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isForbidden())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value("ATHR-001"));
     }
 
@@ -36,7 +36,7 @@ public class QuestionControllerTest {
     @Test
     public void createQuestionWithSignedOutUser() throws Exception {
         mvc.perform(MockMvcRequestBuilders.post("/question/create?content=my_question").contentType(MediaType.APPLICATION_JSON_UTF8_VALUE).header("authorization", "database_accesstoken3"))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isForbidden())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value("ATHR-002"));
     }
 
