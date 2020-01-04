@@ -6,6 +6,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -90,12 +91,12 @@ public class AuthenticateService {
 
     }
 
-    public UserEntity getUserById(final String userId) throws AuthorizationFailedException {
+    public UserEntity getUserById(final String userId) throws  UserNotFoundException {
 
         UserEntity userEntity = this.userDao.getUser( userId );
 
         if (userEntity == null) {
-            throw new AuthorizationFailedException( "USR-001", "User with entered uuid whose question details are to be seen does not exist" );
+            throw new UserNotFoundException( "USR-001", "User with entered uuid whose question details are to be seen does not exist" );
         }
 
         return userEntity;

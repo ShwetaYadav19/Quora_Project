@@ -21,7 +21,7 @@ public class CommonController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/userprofile/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDetailsResponse> getUser(@PathVariable("userId") String userId,
-                                                       @RequestHeader("accessToken") final String accessToken) throws AuthorizationFailedException, UserNotFoundException {
+                                                       @RequestHeader("authorization") final String accessToken) throws AuthorizationFailedException, UserNotFoundException {
 
 
         UserEntity userEntity = userProfileServcie.getUserProfile( userId, accessToken );

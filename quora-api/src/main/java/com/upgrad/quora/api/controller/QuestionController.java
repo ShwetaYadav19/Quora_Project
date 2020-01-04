@@ -8,6 +8,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -65,7 +66,7 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.GET, path = "question/all/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionDetailsResponse> getQuestionByUserId(@PathVariable("userId") String userId,
-                                                                  @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException {
+                                                                  @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
 
         UserEntity userEntity = this.authenticateService.getUser( authorization );
 
@@ -80,7 +81,7 @@ public class QuestionController {
 
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/question/edit/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.PUT, path = "/question/edit/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionEditResponse> editQuestion(@PathVariable("questionId") String questionId,  final QuestionEditRequest questionEditRequest,
                                                              @RequestHeader("authorization") final String authorization) throws  AuthorizationFailedException, InvalidQuestionException {
 

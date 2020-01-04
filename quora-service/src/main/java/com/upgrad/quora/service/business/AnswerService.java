@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class AnswerService {
 
@@ -56,6 +58,21 @@ public class AnswerService {
 
     }
 
+    public UserEntity authenticateUser(final String accessToken) throws AuthorizationFailedException {
+
+        UserAuthTokenEntity userAuthTokenEntity = this.userDao.getAuthToken( accessToken );
+        if (userAuthTokenEntity == null) {
+            throw new AuthorizationFailedException( "ATHR-001", "User has not signed in" );
+        }
+
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException( "ATHR-002", "User is signed out.Sign in first to get the answers" );
+        }
+
+        return userAuthTokenEntity.getUser();
+
+    }
+
     @Transactional(propagation = Propagation.REQUIRED)
     public Answer createAnswer(Answer answer) {
         this.answerDao.createAnswer( answer );
@@ -87,5 +104,18 @@ public class AnswerService {
     @Transactional(propagation = Propagation.REQUIRED)
     public Answer updateAnswer(Answer answer) {
        return this.answerDao.updateAnswer(answer);
+    }
+
+    public Answer deleteAnswer(Answer answer) {
+        return this.answerDao.deleteAnswer(answer);
+    }
+
+
+    public Boolean isAdmin(String answerId, UserEntity user) {
+        return user.getRole().equals( "admin" );
+    }
+
+    public List<Answer> getAllAnswers(Question question) {
+        return this.answerDao.getAllAnswers(question);
     }
 }

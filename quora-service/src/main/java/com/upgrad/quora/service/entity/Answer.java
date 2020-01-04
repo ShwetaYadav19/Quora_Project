@@ -14,7 +14,8 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "ANSWER")
 @NamedQueries({
-        @NamedQuery(name = "answerById", query = "select a from Answer a where a.uuid =:answerId")
+        @NamedQuery(name = "answerById", query = "select a from Answer a where a.uuid =:answerId"),
+        @NamedQuery(name = "answerByQuestionId", query = "select a from Answer a where a.question =:question")
 })
 
 public class Answer implements Serializable {

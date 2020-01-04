@@ -1,9 +1,6 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.AnswerEditRequest;
-import com.upgrad.quora.api.model.AnswerEditResponse;
-import com.upgrad.quora.api.model.AnswerRequest;
-import com.upgrad.quora.api.model.AnswerResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.AnswerService;
 import com.upgrad.quora.service.business.AuthenticateService;
 import com.upgrad.quora.service.business.QuestionService;
@@ -20,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -60,8 +59,8 @@ public class AnswerController {
 
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/answer/edit/{answerId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerEditResponse> createAnswer(final AnswerEditRequest answerEditRequest, @PathVariable("answerId") final String answerId,
+    @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<AnswerEditResponse> editAnswer(final AnswerEditRequest answerEditRequest, @PathVariable("answerId") final String answerId,
                                                            @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException, AnswerNotFoundException {
 
         Answer answer = this.answerService.getAnswer( answerId );
@@ -81,6 +80,50 @@ public class AnswerController {
         }
 
         return new ResponseEntity<AnswerEditResponse>( answerResponse,HttpStatus.CREATED );
+
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}")
+    public ResponseEntity<AnswerEditResponse> delete( @PathVariable("answerId") final String answerId,
+                                                           @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, InvalidQuestionException, AnswerNotFoundException {
+
+        Answer answer = this.answerService.getAnswer( answerId );
+        UserEntity user = this.answerService.getUserForQuestion( authorization );
+        Boolean isOwner = this.answerService.isAnswerOwner( answerId, user );
+        Boolean isAdmin = this.answerService.isAdmin( answerId, user );
+        AnswerEditResponse answerResponse = new AnswerEditResponse();
+
+        if(isOwner || isAdmin) {
+            Answer deletedAnswer = answerService.deleteAnswer( answer );
+
+            answerResponse.id( deletedAnswer.getUuid() )
+                    .status( "ANSWER UPDATED" );
+        }
+
+        return new ResponseEntity<AnswerEditResponse>( answerResponse,HttpStatus.CREATED );
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "answer/all/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswerForGivenQuestion(@PathVariable("questionId") final String questionId,
+                                                             @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, AnswerNotFoundException, InvalidQuestionException {
+
+        UserEntity userEntity = this.answerService.authenticateUser( authorization );
+
+        Question question = this.questionService.getQuestion( questionId );
+
+        List<Answer> answers = this.answerService.getAllAnswers(question);
+        List<AnswerDetailsResponse> answerDetailsResponses = new ArrayList<>(  );
+        for(Answer answer: answers) {
+            AnswerDetailsResponse answerDetailsResponse = new AnswerDetailsResponse();
+            answerDetailsResponse.setAnswerContent( answer.getAns() );
+            answerDetailsResponse.setId( answer.getUuid() );
+            answerDetailsResponse.setQuestionContent( answer.getQuestion().getContent() );
+
+            answerDetailsResponses.add( answerDetailsResponse );
+
+        }
+        return new ResponseEntity<List<AnswerDetailsResponse>>(answerDetailsResponses, HttpStatus.OK);
 
     }
 
