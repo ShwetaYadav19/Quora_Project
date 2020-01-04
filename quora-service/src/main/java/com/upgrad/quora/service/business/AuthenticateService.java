@@ -64,7 +64,7 @@ public class AuthenticateService {
     public UserAuthTokenEntity logoutUser(final String accessToken) throws SignOutRestrictedException {
         UserAuthTokenEntity userAuthTokenEntity = this.userDao.getAuthToken( accessToken );
 
-        if (userAuthTokenEntity == null) {
+        if (userAuthTokenEntity == null || userAuthTokenEntity.getLogoutAt() !=null) {
             throw new SignOutRestrictedException( "SGR-001", "User is not Signed in" );
         }
         return userAuthTokenEntity;

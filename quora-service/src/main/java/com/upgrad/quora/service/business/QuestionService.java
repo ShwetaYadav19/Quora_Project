@@ -35,26 +35,16 @@ public class QuestionService {
     }
 
 
-    public String getAllQuestions() {
+    public List<Question> getAllQuestions() {
         List<Question> allQuestions =  this.questionDao.getAllQuestions();
-        StringBuilder content = new StringBuilder(  );
 
-        for(Question q: allQuestions){
-            content.append( q.toString() +" " );
-        }
-
-        return content.toString();
+        return allQuestions ;
     }
 
-    public String getAllQuestionsByUser(final UserEntity user) {
+    public List<Question> getAllQuestionsByUser(final UserEntity user) {
         List<Question> allQuestions =  this.questionDao.getAllQuestionsByUser(user);
-        StringBuilder content = new StringBuilder(  );
 
-        for(Question q: allQuestions){
-            content.append( q.getUuid()+ " -> " +q.toString() + "\r\n" );
-        }
-
-        return content.toString();
+        return allQuestions;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

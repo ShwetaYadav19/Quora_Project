@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -51,33 +53,47 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/question/all",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getAllQuestions(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
 
         UserEntity userEntity = this.authenticateService.getUser( authorization );
 
-        String allQuestionsContent = this.questionService.getAllQuestions();
+        List<Question> allQuestions = this.questionService.getAllQuestions();
 
-        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
-                .content( allQuestionsContent );
+        List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<QuestionDetailsResponse>(  );
 
-        return new ResponseEntity<QuestionDetailsResponse>( questionDetailsResponse,HttpStatus.OK );
+        for(Question q: allQuestions){
+            QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse();
+            questionDetailsResponse.setContent( q.getContent() );
+            questionDetailsResponse.setId( q.getUuid() );
+            questionDetailsResponses.add( questionDetailsResponse );
+
+        }
+
+        return new ResponseEntity<List<QuestionDetailsResponse>>( questionDetailsResponses,HttpStatus.OK );
 
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "question/all/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getQuestionByUserId(@PathVariable("userId") String userId,
+    public ResponseEntity<List<QuestionDetailsResponse>> getQuestionByUserId(@PathVariable("userId") String userId,
                                                                   @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
 
         UserEntity userEntity = this.authenticateService.getUser( authorization );
 
         UserEntity searchUser = this.authenticateService.getUserById( userId );
 
-        String allQuestionsContent = this.questionService.getAllQuestionsByUser(searchUser);
+        List<Question> allQuestions = this.questionService.getAllQuestionsByUser(searchUser);
 
-        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id( userEntity.getUuid() )
-                .content( allQuestionsContent );
+        List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<QuestionDetailsResponse>(  );
 
-        return new ResponseEntity<QuestionDetailsResponse>( questionDetailsResponse,HttpStatus.OK );
+        for(Question q: allQuestions){
+            QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse();
+            questionDetailsResponse.setContent( q.getContent() );
+            questionDetailsResponse.setId( q.getUuid() );
+            questionDetailsResponses.add( questionDetailsResponse );
+
+        }
+
+        return new ResponseEntity<List<QuestionDetailsResponse>>( questionDetailsResponses,HttpStatus.OK );
 
     }
 
